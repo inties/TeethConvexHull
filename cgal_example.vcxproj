@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DebugJson.cpp" />
     <ClCompile Include="new_main.cpp" />
     <ClCompile Include="parson.c" />
     <ClCompile Include="TeethCurveFitter.cpp" />
@@ -29,7 +30,9 @@
     <ClCompile Include="tinysplinecxx.cxx" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DebugJson.h" />
     <ClInclude Include="filter.h" />
+    <ClInclude Include="header.h" />
     <ClInclude Include="paint.h" />
     <ClInclude Include="TeethCurveFitter.h" />
     <ClInclude Include="TeethDataManager.h" />

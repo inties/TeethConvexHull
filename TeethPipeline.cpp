@@ -87,22 +87,22 @@ namespace TeethConvex {
                 return a.index < b.index;
             });
 
-        for (const auto& result : results) {
-            exporter.addIterationData(
-                result.pointsMap,
-                result.zRanges,
-                result.innerHull,
-                result.outerHull,
-                result.innerHullMap,
-                result.outerHullMap,
-                result.innerBSpline,
-                result.outerBSpline
-            );
-        }
-        exporter.exportJSON("E:\\MylabProjects\\debug.json");
+        //for (const auto& result : results) {
+        //    exporter.addIterationData(
+        //        result.pointsMap,
+        //        result.zRanges,
+        //        result.innerHull,
+        //        result.outerHull,
+        //        result.innerHullMap,
+        //        result.outerHullMap,
+        //        result.innerBSpline,
+        //        result.outerBSpline
+        //    );
+        //}
+        //exporter.exportJSON("E:\\MylabProjects\\debug.json");
 
-        exporter.exportOBJ(outputObjPath);
-        exporter.exportOBJ_2("E:/MylabProjects/debug");
+        //exporter.exportOBJ(outputObjPath);
+        //exporter.exportOBJ_2("E:/MylabProjects/debug");
         std::cout << "Pipeline: Finished processing. Results saved to " << outputObjPath << std::endl;
     }
 

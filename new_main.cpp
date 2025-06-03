@@ -3,8 +3,8 @@
 #include<vector>
 using namespace std;
 int main() {
-	vector<float>percents={1,0.9,0.8,0.7,0.6,0.5};
-	TeethConvex::TeethPipeline::run("C:/Users/邓力源/Desktop/teethTest_lower.obj", "C:/Users/邓力源/Desktop/teethTest_lower.json",
+	vector<float>percents={0.6};
+	TeethConvex::TeethPipeline::run("C:\\Users\\邓力源\\Desktop\\model\\yms_upper-pca.obj", "C:\\Users\\邓力源\\Desktop\\model\\yms_upper-pca.json",
 		"C:/Users/邓力源/Desktop/model/teethTest_lower_output.obj",percents);
 	return 0;
 }

@@ -26,7 +26,7 @@ namespace TeethConvex {
         std::vector<Point_2> redistributedOuterBSpline = outerBSpline;
         
         // 重新分布样条曲线点，使其均匀分布
-        reAssignSpline(redistributedInnerBSpline, redistributedOuterBSpline);
+        //reAssignSpline(redistributedInnerBSpline, redistributedOuterBSpline);
 
         IterationData data;
         data.pointsMap = pointsMap;
@@ -35,9 +35,10 @@ namespace TeethConvex {
         data.outerHull = outerHull;
         data.innerHullMap = innerHullMap;
         data.outerHullMap = outerHullMap;
-        data.innerBSpline = redistributedInnerBSpline;
-        data.outerBSpline = redistributedOuterBSpline;
-
+        //data.innerBSpline = redistributedInnerBSpline;
+        //data.outerBSpline = redistributedOuterBSpline;
+        data.innerBSpline = innerBSpline;
+        data.outerBSpline = outerBSpline;
         // 为样条点分配标签
         std::map<int, std::vector<Point_2>> innerSplineMap, outerSplineMap;
         assignLabelsToSplinePoints(redistributedInnerBSpline, innerHullMap, innerSplineMap);

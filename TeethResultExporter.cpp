@@ -266,6 +266,114 @@ namespace TeethConvex {
         std::cout << "contains " << vertexCount << " vertices" << std::endl;
     }
 
+    void TeethResultExporter::exportOBJ_2(const std::string& objPath) {
+        if (m_iterations.empty()) {
+            std::cerr << "no iteration data, cannot generate OBJ file" << std::endl;
+            return;
+        }
+
+        // 分别处理内侧和外侧样条曲线
+        exportSingleSplineOBJ(objPath + "inner.obj", true);
+        exportSingleSplineOBJ(objPath + "outer.obj", false);
+        
+        std::cout << "success generate OBJ files: " << objPath << "inner.obj and " << objPath << "outer.obj" << std::endl;
+    }
+
+    void TeethResultExporter::exportSingleSplineOBJ(const std::string& objPath, bool isInner) {
+        std::ofstream file(objPath);
+        if (!file.is_open()) {
+            std::cerr << "cannot create OBJ file: " << objPath << std::endl;
+            return;
+        }
+
+        // 收集所有顶点
+        std::vector<std::vector<Point_3>> allIterationVertices;
+        int totalVertexCount = 0;
+
+        // 遍历所有迭代生成顶点
+        for (size_t i = 0; i < m_iterations.size(); ++i) {
+            const auto& curIter = m_iterations[i];
+            
+            // 选择内侧或外侧样条曲线
+            const auto& splinePoints = isInner ? curIter.innerBSpline : curIter.outerBSpline;
+            const auto& pointLabelMap = isInner ? curIter.inPointLabel : curIter.outPointLabel;
+
+            std::vector<Point_3> iterationVertices;
+            
+            for (const auto& point : splinePoints) {
+                std::string key = makeKey(point);
+                int label = -1;
+
+                // 获取点的标签
+                if (pointLabelMap.find(key) != pointLabelMap.end()) {
+                    label = pointLabelMap.at(key);
+                } else {
+                    continue; // 跳过没有标签的点
+                }
+
+                // 获取对应标签的最小z值
+                double minZ = 0.0;
+                if (curIter.zRanges.find(label) != curIter.zRanges.end()) {
+                    minZ = curIter.zRanges.at(label).first;
+                }
+
+                // 创建3D点
+                iterationVertices.emplace_back(point.x(), point.y(), minZ);
+            }
+            
+            allIterationVertices.push_back(iterationVertices);
+            totalVertexCount += iterationVertices.size();
+        }
+
+        // 写入所有顶点
+        for (const auto& iterationVertices : allIterationVertices) {
+            for (const auto& vertex : iterationVertices) {
+                file << "v " << vertex.x() << " " << vertex.y() << " " << vertex.z() << std::endl;
+            }
+        }
+
+        // 计算每次迭代顶点的起始索引（OBJ文件中顶点索引从1开始）
+        std::vector<int> iterationStartIndices;
+        int currentIndex = 1;
+        for (const auto& iterationVertices : allIterationVertices) {
+            iterationStartIndices.push_back(currentIndex);
+            currentIndex += iterationVertices.size();
+        }
+
+        // 生成连接关系
+        // 1. 同一迭代内的连接（相邻点之间）
+        for (size_t i = 0; i < allIterationVertices.size(); ++i) {
+            const auto& iterationVertices = allIterationVertices[i];
+            int startIndex = iterationStartIndices[i];
+            
+            for (size_t j = 0; j < iterationVertices.size(); ++j) {
+                if (j < iterationVertices.size() - 1) {
+                    // 连接到下一个点
+                    file << "l " << (startIndex + j) << " " << (startIndex + j + 1) << std::endl;
+                }
+            }
+        }
+
+        // 2. 相邻迭代间的连接（对应位置的点）
+        for (size_t i = 0; i < allIterationVertices.size() - 1; ++i) {
+            const auto& currentIterVertices = allIterationVertices[i];
+            const auto& nextIterVertices = allIterationVertices[i + 1];
+            
+            int currentStartIndex = iterationStartIndices[i];
+            int nextStartIndex = iterationStartIndices[i + 1];
+            
+            // 连接对应位置的点（取较小的长度以避免越界）
+            size_t minSize = std::min(currentIterVertices.size(), nextIterVertices.size());
+            for (size_t j = 0; j < minSize; ++j) {
+                file << "l " << (currentStartIndex + j) << " " << (nextStartIndex + j) << std::endl;
+            }
+        }
+
+        file.close();
+        std::cout << "generated " << (isInner ? "inner" : "outer") << " spline OBJ with " 
+                  << totalVertexCount << " vertices" << std::endl;
+    }
+
     std::unordered_map<std::string, int> TeethResultExporter::createPointToLabelMap(
         const std::map<int, std::vector<Point_2>>& splineMap) const {
         std::unordered_map<std::string, int> pointToLabelMap;

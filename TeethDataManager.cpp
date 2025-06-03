@@ -114,14 +114,21 @@ namespace TeethConvex {
 
 
 
-    // 新实现：去掉const，更新zfilteredRanges
+    
     std::map<int, std::vector<Point_2>> TeethDataManager::filterPointsByPercent(float percent) {
         std::map<int, std::vector<Point_2>> pointsMap;  
         zfilteredRanges.clear();
+        double min_z=0.0;
+        int count = 0;
+        for (auto&pair : zRanges) {
+            min_z += pair.second.first;
+			count++;
+        }
+		min_z /= count;
         for (const auto& pair : originPointsMap) {
             int label = pair.first;
             const auto& range = zRanges.at(label);
-            double min_z = range.first;
+            //double min_z = range.first;
             double max_z = range.second;
             double threshold = max_z - percent * (max_z - min_z);
             double cur_min_z = std::numeric_limits<double>::max();

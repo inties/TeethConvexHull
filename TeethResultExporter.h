@@ -38,6 +38,8 @@ namespace TeethConvex {
 
         // 所有迭代完成后，写 OBJ
         void exportOBJ(const std::string& objPath);
+        void exportOBJ_2(const std::string& objPath);
+		void exportSingleSplineOBJ(const std::string& objPath, bool isInner);
 
     private:
         // 内部存储每次迭代的数据

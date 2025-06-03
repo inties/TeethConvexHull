@@ -102,6 +102,7 @@ namespace TeethConvex {
         exporter.exportJSON("E:\\MylabProjects\\debug.json");
 
         exporter.exportOBJ(outputObjPath);
+        exporter.exportOBJ_2("E:/MylabProjects/debug");
         std::cout << "Pipeline: Finished processing. Results saved to " << outputObjPath << std::endl;
     }
 

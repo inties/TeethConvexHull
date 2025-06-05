@@ -88,11 +88,11 @@ namespace TeethConvex {
     void TeethCurveFitter::computeConvexHulls() {
         std::vector<Point_2> result;
         std::vector<Point_2> innerTeethHull, outerTeethHull;
-        //std::vector<Point_2> firstTeethHull, lastTeethHull;
+        std::vector<Point_2> firstTeethHull, lastTeethHull;
         std::map<int, std::vector<Point_2>> resultPointMap;
 
         // 计算首尾牙齿的局部凸包
-        //computeSideConvexHull(pointsMap, firstTeethHull, lastTeethHull);
+        computeSideConvexHull(pointsMap, firstTeethHull, lastTeethHull);
 
         // 计算外侧凸包（颊侧）
         result.clear();
@@ -126,54 +126,50 @@ namespace TeethConvex {
         }
         outerhullMap = resultPointMap;
         outerTeethHull = result;
-    
-
-
         //debug
-		std::map<int, std::vector<Point2DStruct>> tempMap;
-        for (auto& pair : pointsMap) {
-			// 将结果点转换为二维点
-			std::vector<Point2DStruct> temp;
-			for (const auto& point : pair.second) {
-				temp.push_back(Point2DStruct(point.x(), point.y()));
-			}
-			tempMap[pair.first] = temp;
-		}
-		DebugJson::writeToJson(tempMap);
-        
-
+		//std::map<int, std::vector<Point2DStruct>> tempMap;
+  //      for (auto& pair : pointsMap) {
+		//	// 将结果点转换为二维点
+		//	std::vector<Point2DStruct> temp;
+		//	for (const auto& point : pair.second) {
+		//		temp.push_back(Point2DStruct(point.x(), point.y()));
+		//	}
+		//	tempMap[pair.first] = temp;
+		//}
+		//DebugJson::writeToJson(tempMap);
         //// 计算内侧凸包（舌侧）
-        //tempResult.clear();
-        //result.clear();
-        //resultPointMap.clear();
-        //setPoints(rotatedPointsMap);
-        //CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
-        //OptimizeConvexHull(resultPointMap, result, rotatedPointsMap);
-        //result.clear();
-        //// 使用外侧凸包的首尾点覆盖内侧凸包的首尾点
-        //resultPointMap[1] = std::vector<Point_2>{ firstTeeth };
-        //resultPointMap[resultPointMap.size()] = std::vector<Point_2>{ lastTeeth };
-        //// 逐牙旋转回去
-        //for (auto pair : resultPointMap) {
-        //    Point_2 rotatedCenter = CalculateCentroid(rotatedPointsMap[pair.first]);
-        //    std::vector<Point_2> temp = Rotate(pair.second, rotatedCenter);
-        //    result.insert(result.end(), temp.begin(), temp.end());
-        //}
-        //innerhullMap = resultPointMap;
-        //innerTeethHull = result;
-        //// 排序凸包点
-        //std::vector<Point_2> newInnerHull = sortPointsAlongCurve(innerTeethHull, false, false);
-        std::vector<Point_2> newOuterHull = sortPointsAlongCurve(outerTeethHull, false, false);
-        //debug
-        std::vector<Point2DStruct>debugpoints;
-        for (auto& point : newOuterHull) {
-            debugpoints.push_back(Point2DStruct(point.x(), point.y()));
+        tempResult.clear();
+        result.clear();
+        resultPointMap.clear();
+        setPoints(rotatedPointsMap);
+        CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
+        reAssignMap(resultPointMap,result, rotatedPointsMap);
+        OptimizeConvexHull(resultPointMap, rotatedPointsMap);
+        result.clear();
+        // 使用外侧凸包的首尾点覆盖内侧凸包的首尾点
+        resultPointMap[1] = std::vector<Point_2>{ firstTeeth };
+        resultPointMap[resultPointMap.size()] = std::vector<Point_2>{ lastTeeth };
+        // 逐牙旋转回去
+        for (auto pair : resultPointMap) {
+            Point_2 rotatedCenter = CalculateCentroid(rotatedPointsMap[pair.first]);
+            std::vector<Point_2> temp = Rotate(pair.second, rotatedCenter);
+            result.insert(result.end(), temp.begin(), temp.end());
         }
-        DebugJson::writeToJson(debugpoints);
-        //innerhull = newInnerHull;
+        innerhullMap = resultPointMap;
+        innerTeethHull = result;
+        // 排序凸包点
+        std::vector<Point_2> newInnerHull = sortPointsAlongCurve(innerTeethHull, false, false);
+        std::vector<Point_2> newOuterHull = sortPointsAlongCurve(outerTeethHull, false, false);
+        ////debug
+        //std::vector<Point2DStruct>debugpoints;
+        //for (auto& point : newOuterHull) {
+        //    debugpoints.push_back(Point2DStruct(point.x(), point.y()));
+        //}
+        //DebugJson::writeToJson(debugpoints);
+        innerhull = newInnerHull;
         outerhull = newOuterHull;
         // 拟合B样条曲线
-        //innerBSplinePoints = fitBSpline(newInnerHull, 100);
+        innerBSplinePoints = fitBSpline(newInnerHull, 100);
         outerBSplinePoints = fitBSpline(newOuterHull, 100);
     }
     std::vector<Point_2> TeethCurveFitter::fitBSpline(const std::vector<Point_2>& points, size_t num_samples) {
@@ -216,21 +212,16 @@ namespace TeethConvex {
     // 凸包优化
     void TeethCurveFitter::OptimizeConvexHull(std::map<int, std::vector<Point_2>>& resultPointMap,
         const std::map<int, std::vector<Point_2>>& pointsMap) {
-        cout << "call optimize" << endl;
         std::vector<bool> teethWithConvexhull(pointsMap.size(), false);
         teethWithConvexhull[0] = true;
         teethWithConvexhull.back() = true;
         for (auto& pair : pointsMap) {
             if(resultPointMap.count(pair.first)>0)
 				teethWithConvexhull[pair.first - 1] = true;
-			else {
-				cout << pair.first << "th teethhull missing" << endl;
-			}
         }
         for (int i = 0; i < teethWithConvexhull.size(); i++) {
             if (!teethWithConvexhull[i]) {
                 int j = i, k = i;
-                //cout << i+1<<"th teethhull missing" << endl;
                 while (!teethWithConvexhull[--j]);
                 while (!teethWithConvexhull[++k]);
                 Point_2 closePoint;

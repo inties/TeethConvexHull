@@ -2,8 +2,6 @@
 #include <vector>
 #include <map>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include"header.h"
-#include"DebugJson.h"
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point_2;
 
@@ -56,7 +54,7 @@ namespace TeethConvex {
         float pointToLineDistance(Point_2 point, Point_2 linePoint1, Point_2 linePoint2);
         Point_2 CalculateCentroid(const std::vector<Point_2>& targetPoints);
         std::vector<Point_2> Rotate(const std::vector<Point_2>& targetPoints, Point_2 rotateCenter);
-        vector<Point_2> filtSideTeeth(const std::vector<Point_2>& teethHull);
+        std::vector<Point_2> filtSideTeeth(const std::vector<Point_2>& teethHull);
         // 其他私有成员和辅助函数
     };
 }

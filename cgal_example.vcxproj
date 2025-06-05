@@ -19,8 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DebugJson.cpp" />
-    <ClCompile Include="new_main.cpp" />
+    <ClCompile Include="运行示例.cpp" />
     <ClCompile Include="parson.c" />
     <ClCompile Include="TeethCurveFitter.cpp" />
     <ClCompile Include="TeethDataManager.cpp" />
@@ -30,15 +29,10 @@
     <ClCompile Include="tinysplinecxx.cxx" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DebugJson.h" />
-    <ClInclude Include="filter.h" />
-    <ClInclude Include="header.h" />
-    <ClInclude Include="paint.h" />
     <ClInclude Include="TeethCurveFitter.h" />
     <ClInclude Include="TeethDataManager.h" />
     <ClInclude Include="TeethPipeline.h" />
     <ClInclude Include="TeethResultExporter.h" />
-    <ClInclude Include="Vector.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -26,7 +26,7 @@ namespace TeethConvex {
         std::vector<Point_2> redistributedOuterBSpline = outerBSpline;
         
         // 重新分布样条曲线点，使其均匀分布
-        //reAssignSpline(redistributedInnerBSpline, redistributedOuterBSpline);
+        reAssignSpline(redistributedInnerBSpline, redistributedOuterBSpline);
 
         IterationData data;
         data.pointsMap = pointsMap;
@@ -35,10 +35,10 @@ namespace TeethConvex {
         data.outerHull = outerHull;
         data.innerHullMap = innerHullMap;
         data.outerHullMap = outerHullMap;
-        //data.innerBSpline = redistributedInnerBSpline;
-        //data.outerBSpline = redistributedOuterBSpline;
-        data.innerBSpline = innerBSpline;
-        data.outerBSpline = outerBSpline;
+        data.innerBSpline = redistributedInnerBSpline;
+        data.outerBSpline = redistributedOuterBSpline;
+        //data.innerBSpline = innerBSpline;
+        //data.outerBSpline = outerBSpline;
         // 为样条点分配标签
         std::map<int, std::vector<Point_2>> innerSplineMap, outerSplineMap;
         assignLabelsToSplinePoints(redistributedInnerBSpline, innerHullMap, innerSplineMap);
@@ -138,153 +138,39 @@ namespace TeethConvex {
         std::cout << "success export JSON file: " << jsonPath << std::endl;
     }
 
-    void TeethResultExporter::exportOBJ(const std::string& objPath) {
+	void TeethResultExporter::exportOBJ_2(const std::string& objPath) {// 生成两个OBJ文件，一个内侧样条曲线，一个外侧样条曲线
         if (m_iterations.empty()) {
             std::cerr << "no iteration data, cannot generate OBJ file" << std::endl;
             return;
         }
 
-        std::ofstream file(objPath);
-        if (!file.is_open()) {
-            std::cerr << "cannot create OBJ file: " << objPath << std::endl;
-            return;
-        }
+		std::string basePath = objPath.substr(0, objPath.find_last_of("."));
+		std::string innerObjPath = basePath + "_innerTeethConvex.obj";
+		std::string outerObjPath = basePath + "_outerTeethConvex.obj";
+        exportSingleSplineOBJ(innerObjPath, true, 1, false);//写入内侧样条曲线
+        exportSingleSplineOBJ(outerObjPath, false, 1, false);//写入外侧样条曲线
 
-        // 创建顶点组
-        std::vector<std::vector<Point_3>> vertexGroups;
-
-        // 遍历所有迭代生成顶点组
-        for (size_t i = 0; i < m_iterations.size(); ++i) {
-            const auto& curIter = m_iterations[i];
-            // 计算下一次迭代的索引（如果是最后一次迭代，设置为当前迭代）
-            const auto& nextIter = (i + 1 < m_iterations.size()) ? m_iterations[i + 1] : curIter;
-
-            // 处理内侧样条曲线
-            std::vector<Point_3> innerVertices;
-            for (const auto& point : curIter.innerBSpline) {
-                std::string key = makeKey(point);
-                int label = -1;
-
-                // 获取点的标签
-                if (curIter.inPointLabel.find(key) != curIter.inPointLabel.end()) {
-                    label = curIter.inPointLabel.at(key);
-                }
-                else {
-                    continue; // 跳过没有标签的点
-                }
-
-                // 获取当前和下一次迭代的Z值
-                double z1 = 0.0, z2 = 0.0;
-
-                if (curIter.zRanges.find(label) != curIter.zRanges.end()) {
-                    z1 = curIter.zRanges.at(label).first; // 使用 minZ
-                }
-
-                if (i + 1 < m_iterations.size() && nextIter.zRanges.find(label) != nextIter.zRanges.end()) {
-                    z2 = nextIter.zRanges.at(label).first; // 使用下一次的 minZ
-                }
-                else {
-                    z2 = z1 + 1.0; // 最后一次迭代，添加固定高度
-                }
-
-                innerVertices.emplace_back(point.x(), point.y(), z1);
-                innerVertices.emplace_back(point.x(), point.y(), z2);
-            }
-            vertexGroups.push_back(innerVertices);
-
-            // 处理外侧样条曲线
-            std::vector<Point_3> outerVertices;
-            for (const auto& point : curIter.outerBSpline) {
-                std::string key = makeKey(point);
-                int label = -1;
-
-                // 获取点的标签
-                if (curIter.outPointLabel.find(key) != curIter.outPointLabel.end()) {
-                    label = curIter.outPointLabel.at(key);
-                }
-                else {
-                    continue; // 跳过没有标签的点
-                }
-
-                // 获取当前和下一次迭代的Z值
-                double z1 = 0.0, z2 = 0.0;
-
-                if (curIter.zRanges.find(label) != curIter.zRanges.end()) {
-                    z1 = curIter.zRanges.at(label).first; // 使用 minZ
-                }
-
-                if (i + 1 < m_iterations.size() && nextIter.zRanges.find(label) != nextIter.zRanges.end()) {
-                    z2 = nextIter.zRanges.at(label).first; // 使用下一次的 minZ
-                }
-                else {
-                    z2 = z1 + 1.0; // 最后一次迭代，添加固定高度
-                }
-
-                outerVertices.emplace_back(point.x(), point.y(), z1);
-                outerVertices.emplace_back(point.x(), point.y(), z2);
-            }
-            vertexGroups.push_back(outerVertices);
-        }
-
-        // 写入顶点
-        int vertexCount = 0;
-        for (const auto& group : vertexGroups) {
-            for (const auto& v : group) {
-                file << "v " << v.x() << " " << v.y() << " " << v.z() << std::endl;
-                vertexCount++;
-            }
-        }
-
-        // 计算每组顶点的偏移量
-        std::vector<int> offsets = { 0 };
-        for (size_t i = 0; i < vertexGroups.size() - 1; ++i) {
-            offsets.push_back(offsets.back() + vertexGroups[i].size());
-        }
-
-        // 写入线段
-        for (size_t i = 0; i < vertexGroups.size(); ++i) {
-            const auto& group = vertexGroups[i];
-            int groupSize = group.size() / 2;  // 每组有底部和顶部顶点
-            int offset = offsets[i];
-
-            for (int j = 0; j < groupSize; ++j) {
-                // 垂直线段
-                int v1 = offset + j * 2 + 1;
-                int v2 = offset + j * 2 + 2;
-                file << "l " << v1 << " " << v2 << std::endl;
-
-                // 水平线段(如果不是最后一个点)
-                if (j < groupSize - 1) {
-                    v2 = offset + j * 2 + 2;
-                    int v4 = offset + (j + 1) * 2 + 2;
-                    file << "l " << v2 << " " << v4 << std::endl;
-                }
-            }
-        }
-
-        file.close();
-        std::cout << "success generate OBJ file: " << objPath << std::endl;
-        std::cout << "contains " << vertexCount << " vertices" << std::endl;
+        std::cout << "success generate OBJ files: " << innerObjPath << "inner.obj and " << outerObjPath << "outer.obj" << std::endl;
     }
 
-    void TeethResultExporter::exportOBJ_2(const std::string& objPath) {
+	void TeethResultExporter::exportOBJ(const std::string& objPath) {// 生成一个OBJ文件，包含内侧和外侧样条曲线
         if (m_iterations.empty()) {
             std::cerr << "no iteration data, cannot generate OBJ file" << std::endl;
             return;
         }
 
-        // 分别处理内侧和外侧样条曲线
-        exportSingleSplineOBJ(objPath + "inner.obj", true);
-        exportSingleSplineOBJ(objPath + "outer.obj", false);
         
-        std::cout << "success generate OBJ files: " << objPath << "inner.obj and " << objPath << "outer.obj" << std::endl;
+		int startIdx = exportSingleSplineOBJ(objPath, true, 1, false);//写入内侧样条曲线
+		exportSingleSplineOBJ(objPath, false, startIdx, true);//追加外侧样条曲线
+        
+        std::cout << "success generate OBJ files: " << objPath<< std::endl;
     }
 
-    void TeethResultExporter::exportSingleSplineOBJ(const std::string& objPath, bool isInner) {
-        std::ofstream file(objPath);
+    int TeethResultExporter::exportSingleSplineOBJ(const std::string& objPath, bool isInner, int startIdx,bool append) {
+        std::ofstream file(objPath, append ? std::ios::app : std::ios::out); // 支持追加
         if (!file.is_open()) {
-            std::cerr << "cannot create OBJ file: " << objPath << std::endl;
-            return;
+            std::cerr << "cannot create or open OBJ file: " << objPath << std::endl;
+            return -1;
         }
 
         // 收集所有顶点
@@ -335,7 +221,7 @@ namespace TeethConvex {
 
         // 计算每次迭代顶点的起始索引（OBJ文件中顶点索引从1开始）
         std::vector<int> iterationStartIndices;
-        int currentIndex = 1;
+        int currentIndex = startIdx;
         for (const auto& iterationVertices : allIterationVertices) {
             iterationStartIndices.push_back(currentIndex);
             currentIndex += iterationVertices.size();
@@ -373,6 +259,7 @@ namespace TeethConvex {
         file.close();
         std::cout << "generated " << (isInner ? "inner" : "outer") << " spline OBJ with " 
                   << totalVertexCount << " vertices" << std::endl;
+		return currentIndex; // 返回总顶点数，供后续处理使用
     }
 
     std::unordered_map<std::string, int> TeethResultExporter::createPointToLabelMap(

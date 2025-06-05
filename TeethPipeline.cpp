@@ -21,6 +21,19 @@ namespace TeethConvex {
         std::vector<Point_2> outerBSpline;
         size_t index;  // 保存迭代索引，确保结果顺序
     };
+    void TeethPipeline::run(const std::string& objPath) {
+		size_t pos = objPath.find_last_of(".");
+		std::string basePath = objPath.substr(0, pos);
+		std::string jsonPath = basePath + ".json";
+        std::string outputPath = basePath + "_teethConvex.obj";
+        std::vector<float> percents = { 1.0f, 0.9f, 0.8f, 0.7f, 0.6f,0.5f }; // 默认处理百分比
+		std::cout << "Pipeline: Running with default percents: ";
+		for (float p : percents) {
+			std::cout << p << " ";
+		}
+		std::cout << std::endl;
+		run(objPath, jsonPath, outputPath, percents);
+    };
     void TeethPipeline::run(
         const std::string& objPath,
         const std::string& jsonPath,
@@ -87,22 +100,23 @@ namespace TeethConvex {
                 return a.index < b.index;
             });
 
-        //for (const auto& result : results) {
-        //    exporter.addIterationData(
-        //        result.pointsMap,
-        //        result.zRanges,
-        //        result.innerHull,
-        //        result.outerHull,
-        //        result.innerHullMap,
-        //        result.outerHullMap,
-        //        result.innerBSpline,
-        //        result.outerBSpline
-        //    );
-        //}
+        for (const auto& result : results) {
+            exporter.addIterationData(
+                result.pointsMap,
+                result.zRanges,
+                result.innerHull,
+                result.outerHull,
+                result.innerHullMap,
+                result.outerHullMap,
+                result.innerBSpline,
+                result.outerBSpline
+            );
+        }
         //exporter.exportJSON("E:\\MylabProjects\\debug.json");
 
         //exporter.exportOBJ(outputObjPath);
-        //exporter.exportOBJ_2("E:/MylabProjects/debug");
+        exporter.exportOBJ(outputObjPath);
+        exporter.exportOBJ_2(outputObjPath);
         std::cout << "Pipeline: Finished processing. Results saved to " << outputObjPath << std::endl;
     }
 

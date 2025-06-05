@@ -27,7 +27,7 @@
     <ClCompile Include="TeethPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="new_main.cpp">
+    <ClCompile Include="运行示例.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="parson.c">
@@ -39,20 +39,8 @@
     <ClCompile Include="tinysplinecxx.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DebugJson.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Vector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="paint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="filter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TeethCurveFitter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -64,12 +52,6 @@
     </ClInclude>
     <ClInclude Include="TeethPipeline.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="header.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugJson.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

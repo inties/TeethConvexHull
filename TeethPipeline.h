@@ -18,5 +18,11 @@ namespace TeethConvex {
             const std::string& outputObjPath,
             const std::vector<float>& percents
         );
+        /**
+         * 运行整个处理管道(简化版)
+		 * @param objPath 输入OBJ文件路径，要求同一目录下有同名的JSON标签文件
+         * 输出OBJ文件到同一目录下，以默认百分比处理
+         */
+        static void run(const std::string& objPath);
     };
 }

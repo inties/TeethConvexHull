@@ -1,7 +1,6 @@
 #define TINYSPLINE_EXPORT
 #include "tinyspline.h"
 #include "parson.h" /* serialization */
-
 #include <stdlib.h> /* malloc, free */
 #include <math.h>   /* fabs, sqrt, acos */
 #include <string.h> /* memcpy, memmove */
